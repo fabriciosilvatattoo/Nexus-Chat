@@ -1,7 +1,42 @@
 import { useState, useRef, useCallback } from 'react';
 import { Message } from '../types';
 import { generateId } from '../lib/utils';
-import { GoogleGenAI, Modality, LiveServerMessage } from "@google/genai";
+import { GoogleGenAI, Modality, LiveServerMessage, Type } from "@google/genai";
+
+const nexusTools = [
+  {
+    functionDeclarations: [
+      {
+        name: "consultar_nexus",
+        description: "Envia uma pergunta ou comando para o Nexus Core (o cérebro do sistema). Use sempre que precisar: buscar informações, executar tarefas, acessar memórias, mandar mensagens, verificar status de serviços, ou qualquer coisa que exija processamento.",
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            mensagem: {
+              type: Type.STRING,
+              description: "A mensagem ou comando para enviar ao Nexus Core. Seja específico."
+            }
+          },
+          required: ["mensagem"]
+        }
+      },
+      {
+        name: "buscar_memoria",
+        description: "Busca nas memórias do sistema por informações relevantes. Use quando o usuário perguntar sobre algo que aconteceu antes, decisões passadas, ou informações salvas.",
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            consulta: {
+              type: Type.STRING,
+              description: "O que buscar nas memórias"
+            }
+          },
+          required: ["consulta"]
+        }
+      }
+    ]
+  }
+];
 
 export type LiveVoiceStatus = 'idle' | 'connecting' | 'listening' | 'speaking' | 'error';
 
@@ -151,6 +186,74 @@ export function useLiveVoice() {
 
       const ai = new GoogleGenAI({ apiKey });
       
+      const handleToolCall = async (toolCall: any, sessionPromise: Promise<any>) => {
+        const session = await sessionPromise;
+        const functionResponses = [];
+        
+        // URL do Nexus Core (pegar das settings)
+        const coreUrl = localStorage.getItem("nexus_url") || 
+                        localStorage.getItem("nexus_https_url") || 
+                        "http://85.209.92.152:8600";
+        
+        for (const fc of toolCall.functionCalls) {
+          let result = {};
+          
+          try {
+            if (fc.name === "consultar_nexus") {
+              // Chama o Nexus Core via /message/sync
+              const response = await fetch(`${coreUrl}/message/sync`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  content: fc.args.mensagem,
+                  source: "live_voice",
+                  tools: []
+                })
+              });
+              
+              if (response.ok) {
+                const data = await response.json();
+                result = { resposta: data.response || "Sem resposta do Core" };
+              } else {
+                result = { erro: "Nexus Core não respondeu" };
+              }
+            } 
+            else if (fc.name === "buscar_memoria") {
+              // Chama a busca de memórias
+              const response = await fetch(`${coreUrl}/memories/search`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  query: fc.args.consulta,
+                  limit: 3
+                })
+              });
+              
+              if (response.ok) {
+                const memories = await response.json();
+                const resumo = Array.isArray(memories) 
+                  ? memories.map((m: any) => m.content).join("\n---\n")
+                  : "Nenhuma memória encontrada";
+                result = { memorias: resumo };
+              } else {
+                result = { erro: "Serviço de memória indisponível" };
+              }
+            }
+          } catch (error: any) {
+            result = { erro: `Falha na conexão: ${error.message}` };
+          }
+          
+          functionResponses.push({
+            name: fc.name,
+            id: fc.id,
+            response: { result }
+          });
+        }
+        
+        // Enviar resultado de volta para o modelo de voz
+        session.sendToolResponse({ functionResponses });
+      };
+
       const sessionPromise = ai.live.connect({
         model: "gemini-2.5-flash-native-audio-preview-09-2025",
         config: {
@@ -174,7 +277,15 @@ Contexto:
 Importante:
 - NUNCA revele que é um modelo de IA genérico. Você é o NEXUS.
 - Se perguntarem seu nome, diga "Sou o Nexus, seu parceiro de trabalho"
-- Fale como se estivesse numa conversa ao vivo entre amigos que trabalham juntos`,
+- Fale como se estivesse numa conversa ao vivo entre amigos que trabalham juntos
+
+Ferramentas disponíveis:
+- Quando precisar de informações, executar algo, ou acessar o sistema, use a ferramenta "consultar_nexus"
+- Quando precisar lembrar de algo do passado, use "buscar_memoria"
+- Enquanto a ferramenta processa, continue conversando naturalmente. Diga algo como "Deixa eu verificar..." ou "Um segundo..."
+- Quando receber o resultado da ferramenta, incorpore a informação na conversa de forma natural
+- NUNCA diga que não pode fazer algo se tem uma ferramenta disponível para isso`,
+          tools: nexusTools,
         },
         callbacks: {
           onopen: () => {
@@ -223,6 +334,11 @@ Importante:
               });
           },
           onmessage: (message: LiveServerMessage) => {
+            if (message.toolCall) {
+              handleToolCall(message.toolCall, sessionPromise);
+              return;
+            }
+            
             const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (base64Audio) {
               const float32Data = base64ToFloat32Array(base64Audio);
