@@ -112,7 +112,7 @@ export function ChatInput({ onSend, isThinking, tools }: ChatInputProps) {
   };
 
   return (
-    <div className="p-4 bg-[var(--bg-surface)]/80 backdrop-blur-md rounded-b-2xl">
+    <div className="p-4 bg-[var(--bg-surface)]/80 backdrop-blur-md">
       {audioError && (
         <div className="mb-2 text-xs text-[var(--error)] bg-[var(--error)]/10 p-2 rounded-lg border border-[var(--error)]/20">
           {audioError}
@@ -217,12 +217,12 @@ export function ChatInput({ onSend, isThinking, tools }: ChatInputProps) {
             onTouchEnd={handleMicMouseUp}
             disabled={isThinking}
             className={cn(
-              "p-3 rounded-xl transition-all flex items-center justify-center",
+              "p-3 rounded-xl transition-all flex items-center justify-center border",
               isThinking
-                ? "bg-[var(--bg-primary)] text-[var(--text-muted)] cursor-not-allowed"
+                ? "bg-[var(--bg-primary)] text-[var(--text-muted)] border-[var(--border)] cursor-not-allowed"
                 : isRecording
-                  ? "bg-red-500 text-white animate-pulse"
-                  : "bg-[var(--bg-surface)] text-[var(--text-primary)] hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]"
+                  ? "bg-red-500 text-white border-red-500 animate-pulse"
+                  : "bg-[var(--bg-primary)] text-[var(--text-primary)] border-[var(--border)] hover:border-[var(--accent)]/50 hover:text-[var(--accent)]"
             )}
           >
             {isRecording ? <Square size={20} fill="currentColor" /> : <Mic size={20} />}
@@ -232,10 +232,10 @@ export function ChatInput({ onSend, isThinking, tools }: ChatInputProps) {
             onClick={handleSend}
             disabled={(!input.trim() && !image) || isThinking}
             className={cn(
-              "p-3 rounded-xl transition-all flex items-center justify-center",
+              "p-3 rounded-xl transition-all flex items-center justify-center border",
               (!input.trim() && !image) || isThinking
-                ? "bg-[var(--bg-primary)] text-[var(--text-muted)] cursor-not-allowed"
-                : "bg-[var(--accent)] text-[var(--bg-primary)] hover:bg-[var(--accent-hover)]",
+                ? "bg-[var(--bg-primary)] text-[var(--text-muted)] border-[var(--border)] cursor-not-allowed"
+                : "bg-[var(--accent)] text-[var(--bg-primary)] border-[var(--accent)] hover:bg-[var(--accent-hover)]",
             )}
           >
             <Send size={20} className={isThinking ? "opacity-50" : ""} />

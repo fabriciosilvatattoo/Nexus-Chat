@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { ChatHeader } from "./ChatHeader";
 import { MessageList } from "./MessageList";
 import { ToolBar } from "./ToolBar";
@@ -35,6 +35,35 @@ export function ChatContainer() {
 
   const [isLiveVoiceOpen, setIsLiveVoiceOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useLocalStorage<number>("nexus_sidebar_width", 400);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const startResizing = useCallback((e: React.MouseEvent) => {
+    setIsDragging(true);
+    e.preventDefault();
+  }, []);
+
+  useEffect(() => {
+    if (!isDragging) return;
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      if (mode === "sidebar-left") {
+        setSidebarWidth(Math.max(320, Math.min(e.clientX, window.innerWidth - 100)));
+      } else if (mode === "sidebar-right") {
+        setSidebarWidth(Math.max(320, Math.min(window.innerWidth - e.clientX, window.innerWidth - 100)));
+      }
+    };
+    
+    const handleMouseUp = () => setIsDragging(false);
+    
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, mode, setSidebarWidth]);
 
   const health = useHealthCheck();
   const { events, clearEvents } = useSSE();
@@ -131,18 +160,26 @@ export function ChatContainer() {
         </button>
       ) : (
         <div
+          style={{ width: mode.startsWith("sidebar") ? `${sidebarWidth}px` : undefined }}
           className={cn(
-            "fixed transition-all duration-300 ease-in-out z-40 flex flex-col bg-[var(--bg-chat)] backdrop-blur-2xl shadow-2xl",
+            "fixed ease-in-out z-40 flex flex-col bg-[var(--bg-chat)] backdrop-blur-2xl shadow-2xl overflow-hidden",
+            !isDragging && "transition-all duration-300",
             mode === "bottom"
               ? cn(
                   "bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl rounded-t-2xl border-t border-x border-[var(--border)]",
                   messages.length === 0 ? "h-[180px]" : "h-[35vh] min-h-[180px]"
                 )
               : mode === "sidebar-left"
-                ? "top-0 left-0 w-[360px] h-full border-r border-[var(--border)]"
-                : "top-0 right-0 w-[360px] h-full border-l border-[var(--border)]",
+                ? "top-0 left-0 h-full border-r border-[var(--border)]"
+                : "top-0 right-0 h-full border-l border-[var(--border)]",
           )}
         >
+          {mode === "sidebar-left" && (
+            <div onMouseDown={startResizing} className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-[var(--accent)]/50 active:bg-[var(--accent)] z-50 transition-colors" />
+          )}
+          {mode === "sidebar-right" && (
+            <div onMouseDown={startResizing} className="absolute top-0 left-0 w-1.5 h-full cursor-col-resize hover:bg-[var(--accent)]/50 active:bg-[var(--accent)] z-50 transition-colors" />
+          )}
           <ChatHeader
             health={health}
             mode={mode}
