@@ -3,10 +3,12 @@ import { ChatHeader } from "./ChatHeader";
 import { MessageList } from "./MessageList";
 import { ToolBar } from "./ToolBar";
 import { ChatInput } from "./ChatInput";
+import { LiveVoicePanel } from "./LiveVoicePanel";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { useHealthCheck } from "../../hooks/useHealthCheck";
 import { useSSE } from "../../hooks/useSSE";
 import { useNexusAPI } from "../../hooks/useNexusAPI";
+import { useLiveVoice } from "../../hooks/useLiveVoice";
 import { ChatMode, Message, ToolState } from "../../types";
 import { generateId } from "../../lib/utils";
 import { cn } from "../../lib/utils";
@@ -29,9 +31,12 @@ export function ChatContainer() {
     voice: false,
   });
 
+  const [isLiveVoiceOpen, setIsLiveVoiceOpen] = useState(false);
+
   const health = useHealthCheck();
   const { events, clearEvents } = useSSE();
   const { sendMessage, isThinking } = useNexusAPI();
+  const liveVoice = useLiveVoice();
 
   const handleToggleMode = () => {
     setMode((prev) =>
@@ -50,6 +55,21 @@ export function ChatContainer() {
   const handleClearChat = () => {
     setMessages([]);
     clearEvents();
+  };
+
+  const handleOpenLiveVoice = () => {
+    setIsLiveVoiceOpen(true);
+    liveVoice.startLiveVoice();
+  };
+
+  const handleCloseLiveVoice = () => {
+    liveVoice.stopLiveVoice();
+    setIsLiveVoiceOpen(false);
+    
+    // Add transcript to messages if there are any
+    if (liveVoice.transcript.length > 0) {
+      setMessages(prev => [...prev, ...liveVoice.transcript]);
+    }
   };
 
   const handleSend = async (content: string, image?: string, audio?: { base64: string; mimeType: string }) => {
@@ -98,34 +118,47 @@ export function ChatContainer() {
   };
 
   return (
-    <div
-      className={cn(
-        "fixed transition-all duration-300 ease-in-out z-50 flex flex-col bg-[var(--bg-chat)] backdrop-blur-xl border-[var(--border)] shadow-2xl",
-        mode === "bottom"
-          ? "bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[50vh] min-h-[400px] rounded-t-2xl border-t border-x"
-          : mode === "sidebar-left"
-            ? "top-0 left-0 w-[400px] h-full border-r border-r-[var(--accent-glow)]"
-            : "top-0 right-0 w-[400px] h-full border-l border-l-[var(--accent-glow)]",
-      )}
-    >
-      <ChatHeader
-        health={health}
-        mode={mode}
-        onToggleMode={handleToggleMode}
-        onClearChat={handleClearChat}
-        tools={tools}
-      />
+    <>
+      <div
+        className={cn(
+          "fixed transition-all duration-300 ease-in-out z-50 flex flex-col bg-[var(--bg-chat)] backdrop-blur-xl border-[var(--border)] shadow-2xl",
+          mode === "bottom"
+            ? "bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[50vh] min-h-[400px] rounded-t-2xl border-t border-x"
+            : mode === "sidebar-left"
+              ? "top-0 left-0 w-[400px] h-full border-r border-r-[var(--accent-glow)]"
+              : "top-0 right-0 w-[400px] h-full border-l border-l-[var(--accent-glow)]",
+        )}
+      >
+        <ChatHeader
+          health={health}
+          mode={mode}
+          onToggleMode={handleToggleMode}
+          onClearChat={handleClearChat}
+          tools={tools}
+          onOpenLiveVoice={handleOpenLiveVoice}
+        />
 
-      <MessageList
-        messages={messages}
-        events={events}
-        isThinking={isThinking}
-      />
+        <MessageList
+          messages={messages}
+          events={events}
+          isThinking={isThinking}
+        />
 
-      <div className="mt-auto flex flex-col">
-        <ToolBar tools={tools} onToggleTool={handleToggleTool} />
-        <ChatInput onSend={handleSend} isThinking={isThinking} tools={tools} />
+        <div className="mt-auto flex flex-col">
+          <ToolBar tools={tools} onToggleTool={handleToggleTool} />
+          <ChatInput onSend={handleSend} isThinking={isThinking} tools={tools} />
+        </div>
       </div>
-    </div>
+
+      {isLiveVoiceOpen && (
+        <LiveVoicePanel
+          status={liveVoice.status}
+          duration={liveVoice.duration}
+          audioLevel={liveVoice.audioLevel}
+          error={liveVoice.error}
+          onClose={handleCloseLiveVoice}
+        />
+      )}
+    </>
   );
 }

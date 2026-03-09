@@ -16,9 +16,13 @@ export function SettingsDropdown({
   const [url, setUrl] = useState(
     () => localStorage.getItem("nexus_url") || "https://product-larger-hold-relate.trycloudflare.com",
   );
+  const [wsUrl, setWsUrl] = useState(
+    () => localStorage.getItem("nexus_ws_url") || "wss://involvement-mandate-needed-unable.trycloudflare.com/live",
+  );
 
   const handleSaveUrl = () => {
     localStorage.setItem("nexus_url", url);
+    localStorage.setItem("nexus_ws_url", wsUrl);
     window.location.reload();
   };
 
@@ -36,7 +40,7 @@ export function SettingsDropdown({
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-72 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl shadow-2xl z-50 p-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute right-0 mt-2 w-80 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl shadow-2xl z-50 p-4 animate-in fade-in slide-in-from-top-2 duration-200">
             <h3 className="text-[var(--text-primary)] font-outfit font-medium mb-4">
               Configurações
             </h3>
@@ -46,20 +50,31 @@ export function SettingsDropdown({
                 <label className="block text-xs text-[var(--text-secondary)] mb-1">
                   URL do Backend
                 </label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 mb-3">
                   <input
                     type="text"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     className="flex-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
                   />
-                  <button
-                    onClick={handleSaveUrl}
-                    className="bg-[var(--accent)] text-[var(--bg-primary)] px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-[var(--accent-hover)] transition-colors"
-                  >
-                    Salvar
-                  </button>
                 </div>
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">
+                  URL do WebSocket (Live Voice)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={wsUrl}
+                    onChange={(e) => setWsUrl(e.target.value)}
+                    className="flex-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
+                  />
+                </div>
+                <button
+                  onClick={handleSaveUrl}
+                  className="w-full mt-3 bg-[var(--accent)] text-[var(--bg-primary)] px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-[var(--accent-hover)] transition-colors"
+                >
+                  Salvar URLs
+                </button>
               </div>
 
               <div className="pt-3 border-t border-[var(--border)]">

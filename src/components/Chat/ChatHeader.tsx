@@ -1,5 +1,5 @@
 import React from "react";
-import { PanelLeft, PanelRight } from "lucide-react";
+import { PanelLeft, PanelRight, PhoneCall } from "lucide-react";
 import { StatusDot } from "../ui/StatusDot";
 import { IconButton } from "../ui/IconButton";
 import { SettingsDropdown } from "./SettingsDropdown";
@@ -11,6 +11,7 @@ interface ChatHeaderProps {
   onToggleMode: () => void;
   onClearChat: () => void;
   tools: ToolState;
+  onOpenLiveVoice: () => void;
 }
 
 export function ChatHeader({
@@ -19,6 +20,7 @@ export function ChatHeader({
   onToggleMode,
   onClearChat,
   tools,
+  onOpenLiveVoice,
 }: ChatHeaderProps) {
   const isSidebar = mode.startsWith("sidebar");
   const activeToolsCount = Object.values(tools).filter(Boolean).length;
@@ -49,6 +51,17 @@ export function ChatHeader({
             {activeToolsCount} tool{activeToolsCount > 1 ? "s" : ""}
           </div>
         )}
+
+        <div className="h-6 w-px bg-[var(--border)] mx-1" />
+
+        <button
+          onClick={onOpenLiveVoice}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/30 hover:bg-[var(--accent)]/20 transition-all shadow-[0_0_10px_var(--accent-glow)] text-sm font-medium"
+          title="Conversa ao Vivo"
+        >
+          <PhoneCall size={16} />
+          <span className="hidden sm:inline">Ao Vivo</span>
+        </button>
 
         <div className="h-6 w-px bg-[var(--border)] mx-1" />
 
