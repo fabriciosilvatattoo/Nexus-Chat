@@ -12,6 +12,7 @@ import { useLiveVoice } from "../../hooks/useLiveVoice";
 import { ChatMode, Message, ToolState } from "../../types";
 import { generateId } from "../../lib/utils";
 import { cn } from "../../lib/utils";
+import { MessageCircle } from "lucide-react";
 
 export function ChatContainer() {
   const [mode, setMode] = useLocalStorage<ChatMode>(
@@ -29,9 +30,11 @@ export function ChatContainer() {
     vision: false,
     memories: false,
     voice: false,
+    image_generation: false,
   });
 
   const [isLiveVoiceOpen, setIsLiveVoiceOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const health = useHealthCheck();
   const { events, clearEvents } = useSSE();
@@ -119,36 +122,49 @@ export function ChatContainer() {
 
   return (
     <>
-      <div
-        className={cn(
-          "fixed transition-all duration-300 ease-in-out z-50 flex flex-col bg-[var(--bg-chat)] backdrop-blur-xl border-[var(--border)] shadow-2xl",
-          mode === "bottom"
-            ? "bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[50vh] min-h-[400px] rounded-t-2xl border-t border-x"
-            : mode === "sidebar-left"
-              ? "top-0 left-0 w-[400px] h-full border-r border-r-[var(--accent-glow)]"
-              : "top-0 right-0 w-[400px] h-full border-l border-l-[var(--accent-glow)]",
-        )}
-      >
-        <ChatHeader
-          health={health}
-          mode={mode}
-          onToggleMode={handleToggleMode}
-          onClearChat={handleClearChat}
-          tools={tools}
-          onOpenLiveVoice={handleOpenLiveVoice}
-        />
+      {isCollapsed ? (
+        <button
+          onClick={() => setIsCollapsed(false)}
+          className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-[var(--bg-chat)] backdrop-blur-xl border border-[var(--border)] flex items-center justify-center text-[var(--accent)] shadow-lg hover:scale-105 hover:bg-[var(--bg-surface)] transition-all duration-300 animate-in slide-in-from-bottom-4"
+        >
+          <MessageCircle size={24} />
+        </button>
+      ) : (
+        <div
+          className={cn(
+            "fixed transition-all duration-300 ease-in-out z-40 flex flex-col bg-[var(--bg-chat)] backdrop-blur-2xl shadow-2xl",
+            mode === "bottom"
+              ? cn(
+                  "bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl rounded-t-2xl border-t border-x border-[var(--border)]",
+                  messages.length === 0 ? "h-[180px]" : "h-[35vh] min-h-[180px]"
+                )
+              : mode === "sidebar-left"
+                ? "top-0 left-0 w-[360px] h-full border-r border-[var(--border)]"
+                : "top-0 right-0 w-[360px] h-full border-l border-[var(--border)]",
+          )}
+        >
+          <ChatHeader
+            health={health}
+            mode={mode}
+            onToggleMode={handleToggleMode}
+            onClearChat={handleClearChat}
+            tools={tools}
+            onOpenLiveVoice={handleOpenLiveVoice}
+            onCollapse={() => setIsCollapsed(true)}
+          />
 
-        <MessageList
-          messages={messages}
-          events={events}
-          isThinking={isThinking}
-        />
+          <MessageList
+            messages={messages}
+            events={events}
+            isThinking={isThinking}
+          />
 
-        <div className="mt-auto flex flex-col">
-          <ToolBar tools={tools} onToggleTool={handleToggleTool} />
-          <ChatInput onSend={handleSend} isThinking={isThinking} tools={tools} />
+          <div className="mt-auto flex flex-col">
+            <ToolBar tools={tools} onToggleTool={handleToggleTool} />
+            <ChatInput onSend={handleSend} isThinking={isThinking} tools={tools} />
+          </div>
         </div>
-      </div>
+      )}
 
       {isLiveVoiceOpen && (
         <LiveVoicePanel
@@ -157,6 +173,8 @@ export function ChatContainer() {
           audioLevel={liveVoice.audioLevel}
           error={liveVoice.error}
           onClose={handleCloseLiveVoice}
+          isPaused={liveVoice.isPaused}
+          onTogglePause={liveVoice.togglePause}
         />
       )}
     </>

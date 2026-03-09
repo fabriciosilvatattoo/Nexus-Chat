@@ -20,6 +20,7 @@ export interface ToolState {
   vision: boolean;
   memories: boolean;
   voice: boolean;
+  image_generation: boolean;
 }
 
 export interface NexusHealth {

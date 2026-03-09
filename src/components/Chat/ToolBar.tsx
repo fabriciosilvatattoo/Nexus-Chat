@@ -1,5 +1,5 @@
 import React from "react";
-import { Globe, BrainCircuit, MapPin, Eye, Database, Mic } from "lucide-react";
+import { Globe, BrainCircuit, MapPin, Eye, Database, Mic, ImagePlus } from "lucide-react";
 import { ToolState } from "../../types";
 import { IconButton } from "../ui/IconButton";
 import { Tooltip } from "../ui/Tooltip";
@@ -11,7 +11,7 @@ interface ToolBarProps {
 
 export function ToolBar({ tools, onToggleTool }: ToolBarProps) {
   return (
-    <div className="flex items-center gap-1 p-2 border-b border-[var(--border)] bg-[var(--bg-surface)]/50">
+    <div className="flex items-center gap-1 px-4 py-2 bg-transparent">
       <Tooltip content="Busca Web">
         <IconButton
           icon={Globe}
@@ -54,6 +54,15 @@ export function ToolBar({ tools, onToggleTool }: ToolBarProps) {
           size="sm"
           active={tools.memories}
           onClick={() => onToggleTool("memories")}
+        />
+      </Tooltip>
+
+      <Tooltip content="Geração de Imagem">
+        <IconButton
+          icon={ImagePlus}
+          size="sm"
+          active={tools.image_generation}
+          onClick={() => onToggleTool("image_generation")}
         />
       </Tooltip>
 

@@ -68,6 +68,7 @@ export function useLiveVoice() {
   const [duration, setDuration] = useState(0);
   const [transcript, setTranscript] = useState<Message[]>([]);
   const [audioLevel, setAudioLevel] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   const sessionRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -76,6 +77,8 @@ export function useLiveVoice() {
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const timerRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const isPausedRef = useRef(false);
+  const speechRecognitionRef = useRef<any>(null);
   
   // Audio playback queue
   const audioQueueRef = useRef<Float32Array[]>([]);
@@ -128,6 +131,14 @@ export function useLiveVoice() {
     };
   };
 
+  const togglePause = useCallback(() => {
+    setIsPaused(prev => {
+      const newState = !prev;
+      isPausedRef.current = newState;
+      return newState;
+    });
+  }, []);
+
   const stopLiveVoice = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
@@ -152,12 +163,21 @@ export function useLiveVoice() {
       });
       sessionRef.current = null;
     }
+
+    if (speechRecognitionRef.current) {
+      try {
+        speechRecognitionRef.current.stop();
+      } catch (e) {}
+      speechRecognitionRef.current = null;
+    }
     
     audioQueueRef.current = [];
     isPlayingRef.current = false;
     nextPlayTimeRef.current = 0;
     
     setStatus('idle');
+    setIsPaused(false);
+    isPausedRef.current = false;
   }, []);
 
   const startLiveVoice = useCallback(async () => {
@@ -185,6 +205,51 @@ export function useLiveVoice() {
       }
 
       const ai = new GoogleGenAI({ apiKey });
+
+      // Setup Speech Recognition
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'pt-BR';
+        recognition.continuous = true;
+        recognition.interimResults = false;
+
+        recognition.onresult = (event: any) => {
+          if (isPausedRef.current) return;
+          const lastResult = event.results[event.results.length - 1];
+          if (lastResult.isFinal) {
+            const text = lastResult[0].transcript;
+            
+            const userMsg: Message = {
+              id: generateId(),
+              role: "user",
+              content: text,
+              timestamp: Date.now(),
+              tools: ["voice"]
+            };
+            
+            setTranscript(prev => [...prev, userMsg]);
+            
+            // Send to memory
+            const coreUrl = localStorage.getItem("nexus_url") || 
+                            localStorage.getItem("nexus_https_url") || 
+                            "http://85.209.92.152:8600";
+            
+            fetch(`${coreUrl}/memories/store`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                content: `Transcrição voz [${new Date().toLocaleTimeString()}]: Fabrício disse: '${text}'`,
+                category: "voice_transcript",
+                tags: ["voice", "transcript"]
+              })
+            }).catch(() => {});
+          }
+        };
+        
+        recognition.onerror = () => {};
+        speechRecognitionRef.current = recognition;
+      }
       
       const handleToolCall = async (toolCall: any, sessionPromise: Promise<any>) => {
         const session = await sessionPromise;
@@ -313,6 +378,8 @@ Ferramentas disponíveis:
                 processorRef.current = processor;
                 
                 processor.onaudioprocess = (e) => {
+                  if (isPausedRef.current) return;
+                  
                   const inputData = e.inputBuffer.getChannelData(0);
                   const base64PCM = float32ToBase64(inputData);
                   
@@ -327,6 +394,12 @@ Ferramentas disponíveis:
 
                 source.connect(processor);
                 processor.connect(audioContextRef.current.destination); // Required for script processor to work
+                
+                if (speechRecognitionRef.current) {
+                  try {
+                    speechRecognitionRef.current.start();
+                  } catch (e) {}
+                }
               })
               .catch(err => {
                 setError("Permissão do microfone necessária para conversa ao vivo.");
@@ -354,6 +427,34 @@ Ferramentas disponíveis:
                nextPlayTimeRef.current = 0;
                setStatus('listening');
             }
+
+            const text = message.serverContent?.modelTurn?.parts?.[0]?.text;
+            if (text) {
+              const agentMsg: Message = {
+                id: generateId(),
+                role: "agent",
+                content: text,
+                timestamp: Date.now(),
+                tools: ["voice"]
+              };
+              setTranscript(prev => [...prev, agentMsg]);
+              
+              const coreUrl = localStorage.getItem("nexus_url") || 
+                              localStorage.getItem("nexus_https_url") || 
+                              "http://85.209.92.152:8600";
+              
+              fetch(`${coreUrl}/memories/store`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  content: `Transcrição voz [${new Date().toLocaleTimeString()}]: Nexus respondeu: '${text}'`,
+                  category: "voice_transcript",
+                  tags: ["voice", "transcript"]
+                })
+              }).catch(() => {});
+            } else if (base64Audio && !text) {
+              // We got audio but no text, we could add a placeholder, but it might be spammy
+            }
           },
           onclose: () => {
             stopLiveVoice();
@@ -379,6 +480,8 @@ Ferramentas disponíveis:
     duration,
     transcript,
     audioLevel,
+    isPaused,
+    togglePause,
     startLiveVoice,
     stopLiveVoice
   };

@@ -40,7 +40,7 @@ export function SettingsDropdown({
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-80 bg-[var(--bg-surface)] border border-[var(--border)] rounded-xl shadow-2xl z-50 p-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute right-0 mt-2 w-80 bg-[var(--bg-surface)]/90 backdrop-blur-xl border border-[var(--border)] rounded-2xl shadow-2xl z-50 p-5 animate-in fade-in slide-in-from-top-2 duration-200">
             <h3 className="text-[var(--text-primary)] font-outfit font-medium mb-4">
               Configurações
             </h3>

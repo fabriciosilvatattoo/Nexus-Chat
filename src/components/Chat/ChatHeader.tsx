@@ -1,5 +1,5 @@
 import React from "react";
-import { PanelLeft, PanelRight, PhoneCall } from "lucide-react";
+import { PanelLeft, PanelRight, PhoneCall, Minimize2 } from "lucide-react";
 import { StatusDot } from "../ui/StatusDot";
 import { IconButton } from "../ui/IconButton";
 import { SettingsDropdown } from "./SettingsDropdown";
@@ -12,6 +12,7 @@ interface ChatHeaderProps {
   onClearChat: () => void;
   tools: ToolState;
   onOpenLiveVoice: () => void;
+  onCollapse: () => void;
 }
 
 export function ChatHeader({
@@ -21,6 +22,7 @@ export function ChatHeader({
   onClearChat,
   tools,
   onOpenLiveVoice,
+  onCollapse,
 }: ChatHeaderProps) {
   const isSidebar = mode.startsWith("sidebar");
   const activeToolsCount = Object.values(tools).filter(Boolean).length;
@@ -56,7 +58,7 @@ export function ChatHeader({
 
         <button
           onClick={onOpenLiveVoice}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/30 hover:bg-[var(--accent)]/20 transition-all shadow-[0_0_10px_var(--accent-glow)] text-sm font-medium"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 transition-all text-sm font-medium"
           title="Conversa ao Vivo"
         >
           <PhoneCall size={16} />
@@ -69,6 +71,12 @@ export function ChatHeader({
           icon={isSidebar ? PanelRight : PanelLeft}
           onClick={onToggleMode}
           title="Alternar layout"
+        />
+
+        <IconButton
+          icon={Minimize2}
+          onClick={onCollapse}
+          title="Minimizar"
         />
 
         <SettingsDropdown health={health} onClearChat={onClearChat} />

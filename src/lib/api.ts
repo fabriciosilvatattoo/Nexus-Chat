@@ -141,3 +141,16 @@ export async function synthesizeSpeech(
   if (!res.ok) throw new Error("Falha na síntese de voz.");
   return await res.json();
 }
+
+export async function generateImage(
+  prompt: string,
+): Promise<{ image_base64: string }> {
+  const res = await fetch(`${getBaseUrl()}/api/senses/imagine`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt, style: "tattoo", aspect_ratio: "1:1" }),
+  });
+
+  if (!res.ok) throw new Error("Falha na geração de imagem.");
+  return await res.json();
+}

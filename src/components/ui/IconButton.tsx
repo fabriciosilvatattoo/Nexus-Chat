@@ -30,16 +30,19 @@ export function IconButton({
   return (
     <button
       className={cn(
-        "rounded-lg transition-all duration-200 flex items-center justify-center",
+        "relative rounded-lg transition-all duration-200 flex items-center justify-center border border-transparent",
         active
-          ? "bg-[var(--accent-glow)] text-[var(--accent)] border border-[var(--accent)]/30"
-          : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] border border-transparent",
+          ? "text-[var(--accent)]"
+          : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]",
         sizeClasses[size],
         className,
       )}
       {...props}
     >
       <Icon size={iconSizes[size]} />
+      {active && (
+        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--accent)] shadow-[0_0_4px_var(--accent-glow)]" />
+      )}
     </button>
   );
 }

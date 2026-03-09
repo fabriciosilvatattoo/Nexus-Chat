@@ -3,7 +3,7 @@ import { Message } from "../../types";
 import { formatTime, cn } from "../../lib/utils";
 import { parseMarkdown } from "../../lib/markdown";
 import { AudioPlayer } from "./AudioPlayer";
-import { Volume2, Loader2, VolumeX } from "lucide-react";
+import { Volume2, Loader2, VolumeX, Mic } from "lucide-react";
 import { synthesizeSpeech } from "../../lib/api";
 import { Tooltip } from "../ui/Tooltip";
 
@@ -42,8 +42,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           className={cn(
             "px-3 py-1.5 rounded-full text-xs italic",
             message.isError
-              ? "bg-[var(--error)]/10 border border-[var(--error)]/30 text-[var(--error)]"
-              : "bg-[var(--bg-surface)]/50 border border-[var(--accent-glow)] text-[var(--text-secondary)]",
+              ? "bg-[var(--error)]/10 text-[var(--error)]"
+              : "bg-[var(--bg-surface)]/50 text-[var(--text-secondary)]",
           )}
         >
           {message.content}
@@ -65,12 +65,6 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           isUser ? "flex-row-reverse" : "flex-row",
         )}
       >
-        {!isUser && (
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-surface)] border border-[var(--accent)]/30 flex items-center justify-center text-[var(--accent)] font-outfit font-bold shadow-[0_0_10px_var(--accent-glow)]">
-            N
-          </div>
-        )}
-
         <div
           className={cn(
             "flex flex-col gap-1",
@@ -79,10 +73,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         >
           <div
             className={cn(
-              "px-4 py-3 rounded-2xl text-sm leading-relaxed",
+              "px-4 py-3 rounded-2xl text-[15px] leading-relaxed",
               isUser
-                ? "bg-[var(--msg-user-bg)] text-[var(--text-primary)] border border-[var(--accent)]/20 rounded-tr-sm"
-                : "bg-[var(--msg-agent-bg)] text-[var(--text-primary)] border border-[var(--border)] rounded-tl-sm",
+                ? "bg-[var(--msg-user-bg)] text-[var(--text-primary)] rounded-tr-sm"
+                : "bg-transparent text-[var(--text-primary)]"
             )}
           >
             {message.image && (
@@ -111,6 +105,9 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           </div>
 
           <div className="flex items-center gap-2 px-1">
+            {message.tools?.includes("voice") && (
+              <Mic size={10} className="text-[var(--text-muted)]" />
+            )}
             <span className="text-[10px] text-[var(--text-muted)]">
               {formatTime(message.timestamp)}
             </span>

@@ -5,6 +5,7 @@ import {
   sendVision,
   searchMemories,
   transcribeAudio,
+  generateImage,
 } from "../lib/api";
 import { Message, ToolState } from "../types";
 import { generateId } from "../lib/utils";
@@ -52,6 +53,20 @@ export function useNexusAPI() {
       if (tools.extended_thinking && finalContent) {
         const res = await sendExtendedThinking(finalContent);
         responseText = res.response;
+      } else if (tools.image_generation && finalContent) {
+        const res = await generateImage(finalContent);
+        responseText = "Aqui está a imagem gerada:";
+        return {
+          responseMsg: {
+            id: generateId(),
+            role: "agent",
+            content: responseText,
+            timestamp: Date.now(),
+            image: `data:image/png;base64,${res.image_base64}`,
+            thinkingTime: (Date.now() - startTime) / 1000,
+          },
+          transcribedText: audio ? transcribedText : undefined
+        };
       } else if (tools.vision && image) {
         const res = await sendVision(
           image,

@@ -112,7 +112,7 @@ export function ChatInput({ onSend, isThinking, tools }: ChatInputProps) {
   };
 
   return (
-    <div className="p-4 bg-[var(--bg-surface)]/80 backdrop-blur-md rounded-b-2xl border-t border-[var(--border)]">
+    <div className="p-4 bg-[var(--bg-surface)]/80 backdrop-blur-md rounded-b-2xl">
       {audioError && (
         <div className="mb-2 text-xs text-[var(--error)] bg-[var(--error)]/10 p-2 rounded-lg border border-[var(--error)]/20">
           {audioError}
@@ -156,10 +156,10 @@ export function ChatInput({ onSend, isThinking, tools }: ChatInputProps) {
         )}
 
         <div className={cn(
-          "flex-1 relative bg-[var(--bg-primary)] border rounded-xl transition-all flex items-center",
+          "flex-1 relative bg-[var(--bg-primary)] rounded-xl transition-all flex items-center border border-[var(--border)]",
           isRecording 
-            ? "border-red-500/50 bg-red-500/5 shadow-[0_0_15px_rgba(239,68,68,0.1)]" 
-            : "border-[var(--border)] focus-within:border-[var(--accent)]/50 focus-within:ring-1 focus-within:ring-[var(--accent)]/20"
+            ? "border-red-500/50 bg-red-500/5" 
+            : "focus-within:border-[var(--accent)]/50 focus-within:ring-1 focus-within:ring-[var(--accent)]/20"
         )}>
           {isRecording ? (
             <div className="flex items-center justify-between w-full p-3 h-[46px]">
@@ -219,10 +219,10 @@ export function ChatInput({ onSend, isThinking, tools }: ChatInputProps) {
             className={cn(
               "p-3 rounded-xl transition-all flex items-center justify-center",
               isThinking
-                ? "bg-[var(--bg-primary)] text-[var(--text-muted)] border border-[var(--border)] cursor-not-allowed"
+                ? "bg-[var(--bg-primary)] text-[var(--text-muted)] cursor-not-allowed"
                 : isRecording
-                  ? "bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.4)] animate-pulse"
-                  : "bg-[var(--bg-surface)] text-[var(--accent)] border border-[var(--accent)]/30 hover:bg-[var(--accent-glow)]"
+                  ? "bg-red-500 text-white animate-pulse"
+                  : "bg-[var(--bg-surface)] text-[var(--text-primary)] hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]"
             )}
           >
             {isRecording ? <Square size={20} fill="currentColor" /> : <Mic size={20} />}
@@ -234,8 +234,8 @@ export function ChatInput({ onSend, isThinking, tools }: ChatInputProps) {
             className={cn(
               "p-3 rounded-xl transition-all flex items-center justify-center",
               (!input.trim() && !image) || isThinking
-                ? "bg-[var(--bg-primary)] text-[var(--text-muted)] border border-[var(--border)] cursor-not-allowed"
-                : "bg-[var(--accent)] text-[var(--bg-primary)] hover:bg-[var(--accent-hover)] shadow-[0_0_15px_var(--accent-glow)]",
+                ? "bg-[var(--bg-primary)] text-[var(--text-muted)] cursor-not-allowed"
+                : "bg-[var(--accent)] text-[var(--bg-primary)] hover:bg-[var(--accent-hover)]",
             )}
           >
             <Send size={20} className={isThinking ? "opacity-50" : ""} />
