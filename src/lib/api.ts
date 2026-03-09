@@ -1,7 +1,17 @@
 import { Message, NexusHealth, ToolState } from "../types";
 
-export const getBaseUrl = () =>
-  localStorage.getItem("nexus_url") || "http://85.209.92.152:8600";
+export const getBaseUrl = () => {
+  const stored = localStorage.getItem("nexus_url");
+  if (stored) return stored;
+  
+  if (window.location.protocol === 'https:') {
+    const httpsCore = localStorage.getItem("nexus_https_url");
+    if (httpsCore) return httpsCore;
+    console.warn("Nexus Core: Acesse Settings e configure a URL HTTPS do Core para evitar Mixed Content.");
+  }
+  
+  return "http://85.209.92.152:8600";
+};
 
 export async function fetchHealth(): Promise<
   NexusHealth & { latency?: number }

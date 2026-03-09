@@ -16,9 +16,13 @@ export function SettingsDropdown({
   const [url, setUrl] = useState(
     () => localStorage.getItem("nexus_url") || "http://85.209.92.152:8600",
   );
+  const [httpsUrl, setHttpsUrl] = useState(
+    () => localStorage.getItem("nexus_https_url") || "",
+  );
 
   const handleSaveUrl = () => {
     localStorage.setItem("nexus_url", url);
+    localStorage.setItem("nexus_https_url", httpsUrl);
     window.location.reload();
   };
 
@@ -44,7 +48,7 @@ export function SettingsDropdown({
             <div className="space-y-4">
               <div>
                 <label className="block text-xs text-[var(--text-secondary)] mb-1">
-                  URL do Backend
+                  URL do Backend (HTTP)
                 </label>
                 <div className="flex gap-2 mb-3">
                   <input
@@ -54,11 +58,25 @@ export function SettingsDropdown({
                     className="flex-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
                   />
                 </div>
+                
+                <label className="block text-xs text-[var(--text-secondary)] mb-1">
+                  URL da API (HTTPS)
+                </label>
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={httpsUrl}
+                    onChange={(e) => setHttpsUrl(e.target.value)}
+                    placeholder="https://seu-tunel.trycloudflare.com"
+                    className="flex-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
+                  />
+                </div>
+
                 <button
                   onClick={handleSaveUrl}
                   className="w-full mt-3 bg-[var(--accent)] text-[var(--bg-primary)] px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-[var(--accent-hover)] transition-colors"
                 >
-                  Salvar URL
+                  Salvar URLs
                 </button>
               </div>
 

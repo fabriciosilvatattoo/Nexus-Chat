@@ -132,7 +132,17 @@ export function useLiveVoice() {
       setDuration(0);
       setTranscript([]);
       
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const API_KEYS = [
+        import.meta.env.VITE_GEMINI_KEY_1,
+        import.meta.env.VITE_GEMINI_KEY_2,
+        import.meta.env.VITE_GEMINI_KEY_3,
+        import.meta.env.VITE_GEMINI_KEY_4,
+        import.meta.env.VITE_GEMINI_KEY_5,
+      ].filter(Boolean);
+
+      let keyIndex = Math.floor(Math.random() * API_KEYS.length);
+      const apiKey = API_KEYS[keyIndex] || import.meta.env.VITE_GEMINI_API_KEY;
+
       if (!apiKey) {
         setError("Chave da API Gemini não configurada.");
         setStatus('error');
@@ -146,9 +156,25 @@ export function useLiveVoice() {
         config: {
           responseModalities: [Modality.AUDIO],
           speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: "Zephyr" } },
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: "Puck" } },
           },
-          systemInstruction: "Você é o Nexus Core, um assistente de IA. Responda sempre em português do Brasil de forma natural e conversacional.",
+          systemInstruction: `Você é o Nexus, o assistente pessoal do Fabrício. Fale sempre em português do Brasil, de forma natural e direta, como um parceiro de trabalho.
+
+Personalidade:
+- Tom: parceiro, direto, sem enrolação. Use expressões como "beleza", "sacou?", "fechou"
+- Seja conciso: respostas de 2-3 frases no máximo
+- Nunca fale de forma robótica ou formal demais
+- Se não souber algo, diga "não sei" em vez de inventar
+
+Contexto:
+- Você é parte de um sistema maior que tem acesso a ferramentas, memórias e serviços
+- Quando o Fabrício pedir algo que exige ação (buscar dados, executar comando, etc), diga algo como "Deixa eu verificar..." ou "Um segundo que eu vou ver isso..."
+- Você pode falar sobre qualquer assunto, mas seu foco é ajudar o Fabrício com tecnologia, negócios e projetos
+
+Importante:
+- NUNCA revele que é um modelo de IA genérico. Você é o NEXUS.
+- Se perguntarem seu nome, diga "Sou o Nexus, seu parceiro de trabalho"
+- Fale como se estivesse numa conversa ao vivo entre amigos que trabalham juntos`,
         },
         callbacks: {
           onopen: () => {
