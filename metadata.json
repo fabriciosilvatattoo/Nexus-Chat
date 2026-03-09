@@ -1,0 +1,5 @@
+{
+  "name": "Nexus Chat",
+  "description": "Frontend de um sistema de chat para o Nexus Core — um agente autônomo. Permite comunicação em tempo real com o agente.",
+  "requestFramePermissions": []
+}
