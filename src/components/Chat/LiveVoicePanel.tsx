@@ -29,7 +29,7 @@ export function LiveVoicePanel({ status, duration, audioLevel, error, onClose }:
     if (error) return error;
     switch (status) {
       case 'connecting': return 'Conectando...';
-      case 'listening': return 'Ouvindo...';
+      case 'listening': return 'Ao vivo — Ouvindo...';
       case 'speaking': return 'Nexus está falando...';
       case 'error': return 'Erro na conexão';
       default: return 'Ao vivo';
@@ -47,6 +47,17 @@ export function LiveVoicePanel({ status, duration, audioLevel, error, onClose }:
         
         {/* Main Avatar Circle */}
         <div className="relative flex items-center justify-center w-32 h-32 mb-8">
+          {/* Mic Volume Ring */}
+          {status === 'listening' && (
+            <div 
+              className="absolute inset-[-10px] rounded-full border-2 border-[var(--accent)]/30 transition-all duration-75"
+              style={{ 
+                transform: `scale(${1 + audioLevel * 0.5})`,
+                opacity: 0.3 + audioLevel * 0.7
+              }}
+            />
+          )}
+
           {/* Speaking Rings Animation */}
           {status === 'speaking' && (
             <>

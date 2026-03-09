@@ -1,7 +1,7 @@
 import { Message, NexusHealth, ToolState } from "../types";
 
 export const getBaseUrl = () =>
-  localStorage.getItem("nexus_url") || "https://product-larger-hold-relate.trycloudflare.com";
+  localStorage.getItem("nexus_url") || "http://85.209.92.152:8600";
 
 export async function fetchHealth(): Promise<
   NexusHealth & { latency?: number }
