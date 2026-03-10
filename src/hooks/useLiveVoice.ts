@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { Message } from '../types';
 import { generateId } from '../lib/utils';
+import { getBaseUrl } from '../lib/api';
 import { GoogleGenAI, Modality, LiveServerMessage, Type } from "@google/genai";
 
 const nexusTools = [
@@ -245,9 +246,7 @@ export function useLiveVoice() {
             setTranscript(prev => [...prev, userMsg]);
             
             // Send to memory
-            const coreUrl = localStorage.getItem("nexus_url") || 
-                            localStorage.getItem("nexus_https_url") || 
-                            "http://85.209.92.152:8600";
+            const coreUrl = getBaseUrl();
             
             fetch(`${coreUrl}/memories/store`, {
               method: "POST",
@@ -270,9 +269,7 @@ export function useLiveVoice() {
         const functionResponses = [];
         
         // URL do Nexus Core (pegar das settings)
-        const coreUrl = localStorage.getItem("nexus_url") || 
-                        localStorage.getItem("nexus_https_url") || 
-                        "http://85.209.92.152:8600";
+        const coreUrl = getBaseUrl();
         
         for (const fc of toolCall.functionCalls) {
           let result = {};
@@ -467,9 +464,7 @@ Ferramentas disponíveis:
               };
               setTranscript(prev => [...prev, agentMsg]);
               
-              const coreUrl = localStorage.getItem("nexus_url") || 
-                              localStorage.getItem("nexus_https_url") || 
-                              "http://85.209.92.152:8600";
+              const coreUrl = getBaseUrl();
               
               fetch(`${coreUrl}/memories/store`, {
                 method: "POST",

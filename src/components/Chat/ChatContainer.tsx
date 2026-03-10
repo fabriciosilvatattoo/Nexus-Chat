@@ -12,6 +12,7 @@ import { useLiveVoice } from "../../hooks/useLiveVoice";
 import { ChatMode, Message, ToolState } from "../../types";
 import { generateId } from "../../lib/utils";
 import { cn } from "../../lib/utils";
+import { getBaseUrl } from "../../lib/api";
 import { MessageCircle } from "lucide-react";
 
 interface ChatContainerProps {
@@ -130,9 +131,7 @@ export function ChatContainer({ events, clearEvents, hasCanvas, onClearCanvas }:
 
     try {
       if (tools.canvas) {
-        const coreUrl = localStorage.getItem("nexus_url") || 
-                        localStorage.getItem("nexus_https_url") || 
-                        "http://85.209.92.152:8600";
+        const coreUrl = getBaseUrl();
         fetch(`${coreUrl}/api/canvas/generate`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -15,7 +15,7 @@ export function useSSE() {
   const [canvasContent, setCanvasContent] = useLocalStorage<CanvasContent | null>("nexus_canvas_content", null);
   const [canvasHistory, setCanvasHistory] = useLocalStorage<CanvasContent[]>("nexus_canvas_history", []);
   const retryCountRef = useRef(0);
-  const maxRetries = 5;
+  const maxRetries = 999;
 
   useEffect(() => {
     let eventSource: EventSource | null = null;

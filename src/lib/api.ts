@@ -1,15 +1,15 @@
 import { Message, NexusHealth, ToolState } from "../types";
 
 export const getBaseUrl = () => {
-  const stored = localStorage.getItem("nexus_url");
-  if (stored) return stored;
-  
+  // HTTPS (Cloudflare tunnel) = ALWAYS use relative URLs.
+  // Nginx inside the container proxies /health, /message, /memories, /api to Core.
   if (window.location.protocol === 'https:') {
-    const httpsCore = localStorage.getItem("nexus_https_url");
-    if (httpsCore) return httpsCore;
-    console.warn("Nexus Core: Acesse Settings e configure a URL HTTPS do Core para evitar Mixed Content.");
+    return "";  // relative URLs — Nginx proxies to Core
   }
   
+  // HTTP: use localStorage or fallback to direct IP
+  const stored = localStorage.getItem("nexus_url");
+  if (stored) return stored;
   return "http://85.209.92.152:8600";
 };
 
