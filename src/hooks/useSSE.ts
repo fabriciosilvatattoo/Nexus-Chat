@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { getBaseUrl } from "../lib/api";
+import { CanvasContent } from "../types";
+import { useLocalStorage } from "./useLocalStorage";
 
 export interface SSEEvent {
   step: string;
@@ -10,6 +12,8 @@ export interface SSEEvent {
 
 export function useSSE() {
   const [events, setEvents] = useState<SSEEvent[]>([]);
+  const [canvasContent, setCanvasContent] = useLocalStorage<CanvasContent | null>("nexus_canvas_content", null);
+  const [canvasHistory, setCanvasHistory] = useLocalStorage<CanvasContent[]>("nexus_canvas_history", []);
   const retryCountRef = useRef(0);
   const maxRetries = 5;
 
@@ -36,6 +40,26 @@ export function useSSE() {
         eventSource.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
+            
+            // Check for canvas_update event
+            if (data.event === "canvas_update" || data.type === "canvas_update") {
+              const newCanvasContent: CanvasContent = {
+                id: data.data?.id || data.id || Math.random().toString(36).substring(7),
+                content_type: data.data?.content_type || data.content_type || 'html',
+                content: data.data?.content || data.content || '',
+                title: data.data?.title || data.title || '',
+                position: data.data?.position || data.position || 'center',
+                timestamp: Date.now()
+              };
+              
+              setCanvasContent(newCanvasContent);
+              setCanvasHistory(prev => {
+                const newHistory = [newCanvasContent, ...prev].slice(0, 10);
+                return newHistory;
+              });
+              return; // Don't add canvas updates to regular events
+            }
+            
             setEvents((prev) => [...prev, { ...data, timestamp: Date.now() }]);
           } catch (e) {
             console.error("Error parsing SSE data", e);
@@ -73,6 +97,7 @@ export function useSSE() {
   }, []);
 
   const clearEvents = () => setEvents([]);
+  const clearCanvas = () => setCanvasContent(null);
 
-  return { events, clearEvents };
+  return { events, clearEvents, canvasContent, canvasHistory, clearCanvas };
 }

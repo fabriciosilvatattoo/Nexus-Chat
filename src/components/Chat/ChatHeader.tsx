@@ -1,5 +1,5 @@
 import React from "react";
-import { PanelLeft, PanelRight, PhoneCall, Minimize2 } from "lucide-react";
+import { PanelLeft, PanelRight, PhoneCall, Minimize2, Eraser } from "lucide-react";
 import { StatusDot } from "../ui/StatusDot";
 import { IconButton } from "../ui/IconButton";
 import { SettingsDropdown } from "./SettingsDropdown";
@@ -14,6 +14,8 @@ interface ChatHeaderProps {
   tools: ToolState;
   onOpenLiveVoice: () => void;
   onCollapse: () => void;
+  hasCanvas: boolean;
+  onClearCanvas: () => void;
 }
 
 export function ChatHeader({
@@ -24,6 +26,8 @@ export function ChatHeader({
   tools,
   onOpenLiveVoice,
   onCollapse,
+  hasCanvas,
+  onClearCanvas,
 }: ChatHeaderProps) {
   const isSidebar = mode.startsWith("sidebar");
   const activeToolsCount = Object.values(tools).filter(Boolean).length;
@@ -83,6 +87,14 @@ export function ChatHeader({
           onClick={onCollapse}
           title="Minimizar"
         />
+
+        {hasCanvas && (
+          <IconButton
+            icon={Eraser}
+            onClick={onClearCanvas}
+            title="Limpar tela"
+          />
+        )}
 
         <SettingsDropdown health={health} onClearChat={onClearChat} />
       </div>

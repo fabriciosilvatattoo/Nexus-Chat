@@ -33,6 +33,20 @@ const nexusTools = [
           },
           required: ["consulta"]
         }
+      },
+      {
+        name: "renderizar_canvas",
+        description: "Gera e mostra uma interface visual na tela do Fabrício. Use quando ele pedir para mostrar, exibir, criar ou visualizar algo na tela. Por exemplo: 'mostra um painel de status', 'crie um dashboard', 'exibe os leads do mês'.",
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            prompt: {
+              type: Type.STRING,
+              description: "O que gerar e mostrar na tela. Seja descritivo sobre o layout desejado."
+            }
+          },
+          required: ["prompt"]
+        }
       }
     ]
   }
@@ -302,6 +316,20 @@ export function useLiveVoice() {
                 result = { memorias: resumo };
               } else {
                 result = { erro: "Serviço de memória indisponível" };
+              }
+            }
+            else if (fc.name === "renderizar_canvas") {
+              const response = await fetch(`${coreUrl}/api/canvas/generate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: fc.args.prompt })
+              });
+              
+              if (response.ok) {
+                const data = await response.json();
+                result = { status: "Visualização gerada e aparecendo na tela", event_id: data.event_id };
+              } else {
+                result = { erro: "Não consegui gerar a visualização" };
               }
             }
           } catch (error: any) {

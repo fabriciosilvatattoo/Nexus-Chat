@@ -21,6 +21,16 @@ export interface ToolState {
   memories: boolean;
   voice: boolean;
   image_generation: boolean;
+  canvas: boolean;
+}
+
+export interface CanvasContent {
+  id: string;
+  content_type: 'html' | 'react' | 'markdown';
+  content: string;
+  title: string;
+  position: 'center' | 'top' | 'bottom' | 'fill';
+  timestamp: number;
 }
 
 export interface NexusHealth {

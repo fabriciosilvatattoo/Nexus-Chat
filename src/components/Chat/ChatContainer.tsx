@@ -6,7 +6,7 @@ import { ChatInput } from "./ChatInput";
 import { LiveVoicePanel } from "./LiveVoicePanel";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { useHealthCheck } from "../../hooks/useHealthCheck";
-import { useSSE } from "../../hooks/useSSE";
+import { SSEEvent } from "../../hooks/useSSE";
 import { useNexusAPI } from "../../hooks/useNexusAPI";
 import { useLiveVoice } from "../../hooks/useLiveVoice";
 import { ChatMode, Message, ToolState } from "../../types";
@@ -14,7 +14,14 @@ import { generateId } from "../../lib/utils";
 import { cn } from "../../lib/utils";
 import { MessageCircle } from "lucide-react";
 
-export function ChatContainer() {
+interface ChatContainerProps {
+  events: SSEEvent[];
+  clearEvents: () => void;
+  hasCanvas: boolean;
+  onClearCanvas: () => void;
+}
+
+export function ChatContainer({ events, clearEvents, hasCanvas, onClearCanvas }: ChatContainerProps) {
   const [mode, setMode] = useLocalStorage<ChatMode>(
     "nexus_chat_mode",
     "bottom",
@@ -31,6 +38,7 @@ export function ChatContainer() {
     memories: false,
     voice: false,
     image_generation: false,
+    canvas: false,
   });
 
   const [isLiveVoiceOpen, setIsLiveVoiceOpen] = useState(false);
@@ -66,7 +74,6 @@ export function ChatContainer() {
   }, [isDragging, mode, setSidebarWidth]);
 
   const health = useHealthCheck();
-  const { events, clearEvents } = useSSE();
   const { sendMessage, isThinking } = useNexusAPI();
   const liveVoice = useLiveVoice();
 
@@ -122,6 +129,17 @@ export function ChatContainer() {
     clearEvents();
 
     try {
+      if (tools.canvas) {
+        const coreUrl = localStorage.getItem("nexus_url") || 
+                        localStorage.getItem("nexus_https_url") || 
+                        "http://85.209.92.152:8600";
+        fetch(`${coreUrl}/api/canvas/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: content })
+        }).catch(err => console.error("Failed to generate canvas:", err));
+      }
+
       const { responseMsg, transcribedText } = await sendMessage(content, tools, image, audio);
       
       if (audio && transcribedText) {
@@ -188,6 +206,8 @@ export function ChatContainer() {
             tools={tools}
             onOpenLiveVoice={handleOpenLiveVoice}
             onCollapse={() => setIsCollapsed(true)}
+            hasCanvas={hasCanvas}
+            onClearCanvas={onClearCanvas}
           />
 
           <MessageList

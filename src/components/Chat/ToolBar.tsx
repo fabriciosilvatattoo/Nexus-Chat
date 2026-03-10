@@ -1,5 +1,5 @@
 import React from "react";
-import { Globe, BrainCircuit, MapPin, Eye, Database, Mic, ImagePlus } from "lucide-react";
+import { Globe, BrainCircuit, MapPin, Eye, Database, Mic, ImagePlus, PenTool } from "lucide-react";
 import { ToolState } from "../../types";
 import { IconButton } from "../ui/IconButton";
 import { Tooltip } from "../ui/Tooltip";
@@ -63,6 +63,15 @@ export function ToolBar({ tools, onToggleTool }: ToolBarProps) {
           size="sm"
           active={tools.image_generation}
           onClick={() => onToggleTool("image_generation")}
+        />
+      </Tooltip>
+
+      <Tooltip content="Canvas">
+        <IconButton
+          icon={PenTool}
+          size="sm"
+          active={tools.canvas}
+          onClick={() => onToggleTool("canvas")}
         />
       </Tooltip>
 
